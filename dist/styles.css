@@ -1,0 +1,60 @@
+*{
+    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+}
+body{
+    background-color: black;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+header{
+    color: whitesmoke;
+    text-align: center;
+    font-size: 50px;
+}
+
+.content{
+    display: flex;
+    align-self: center;
+}
+
+.leftGrid{
+    margin-top: 100px;
+    color: whitesmoke;
+    border: solid 1px white;
+
+    height: 500px;
+    width: 500px;
+    margin-right: 100px;
+
+    display: grid;
+    grid-template-columns: repeat(10, 1fr);
+    grid-template-rows: repeat(10, 1fr);
+
+}
+.leftCells{
+    border: solid 1px white;
+
+}
+
+.rightGrid{
+    margin-top: 100px;
+    color: whitesmoke;
+    border: solid 1px white;
+    
+    height: 500px;
+    width: 500px;
+
+    display: grid;
+    grid-template-columns: repeat(10, 1fr);
+    grid-template-rows: repeat(10, 1fr);
+
+}
+
+.rightCells{
+    
+    background-color: black;
+    border: solid 1px white;
+
+}
