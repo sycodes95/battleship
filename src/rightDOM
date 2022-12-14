@@ -1,31 +1,5 @@
-function cpuDOM(gameBoard, shipsArray, overallHitbox) {
-    let domBoard = document.querySelector('.rightGrid');
-  
-    // Loop through each element in the game board
-    for (let e of gameBoard) {
-        let cell = document.createElement('div');
-        cell.classList.add('rightCells');
-        cell.setAttribute('id', `${[e[0], e[1]]}`);
-        domBoard.appendChild(cell);
-  
-      // Attach an event listener to the current cell
-        cell.addEventListener('click', () => {
-            console.log(overallHitbox);
-  
-        // Loop through each element in the overall hitbox
-            for (let hit of overallHitbox) {
-                if (cell.id == `${hit[0]},${hit[1]}`) {
-                    cell.style.backgroundColor = 'red';
-                    cell.style.opacity = '0.6';
-                    break;
-                } else if (cell.id !== `${hit[0]},${hit[1]}`){
-                    cell.style.backgroundColor = 'white';
-                    cell.style.opacity = '0.1';
-                    
-                }
-            }
-        });
-    }
+function cpuDOM() {
+    
 }
   
 

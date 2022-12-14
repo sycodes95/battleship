@@ -1,3 +1,5 @@
+const playerDOM = require('./leftDOM')
+const shipFactory = require('./shipFactory')
 function gameBoard(){
     return {
         board: [],
@@ -9,13 +11,20 @@ function gameBoard(){
         submarineHitbox: [],
         patrolboatHitbox: [],
 
-        createBoard(){
+        createBoard(domBoard){
             let coords = [];
             let xAxis = [0,1,2,3,4,5,6,7,8,9]
             xAxis.forEach(el => {
                 for(let i = 0; i < xAxis.length; i++) coords.push([el, xAxis[i]]);
             })
             this.board = coords
+            for (let e of this.board) {
+                let cell = document.createElement('div');
+                cell.classList.add('rightCells');
+                cell.setAttribute('id', `${[e[0], e[1]]}`);
+                
+                domBoard.appendChild(cell);
+            }
             return coords;
         },
         placeShip(ship, coord) {
@@ -31,28 +40,25 @@ function gameBoard(){
             }
             return this[hitboxKey];
         },
-        receiveAttack(coord) {
+        receiveAttack(coord, ships) {
             this.attacked.push(coord);
-          
-            const hitboxes = [
-              this.carrierHitbox,
-              this.battleshipHitbox,
-              this.destroyerHitbox,
-              this.submarineHitbox,
-              this.patrolboatHitbox
-            ];
-            const ships = [carrier, battleship, destroyer, submarine, patrolboat];
-          
-            for (let i = 0; i < hitboxes.length; i++) {
-              if (hitboxes[i].includes(coord)) {
-                ships[i].gotHit();
-              }
+            for(let e of this.overallHitbox){
+                if(e[0] == coord[0] && e[1] == coord[1]){
+                    let color = 'red'
+                    playerDOM(coord, color)
+                    break;
+                } else {
+                    let color = 'white'
+                    playerDOM(coord, color)
+                }
             }
-          
-            if (carrier.isSunk() && battleship.isSunk() && destroyer.isSunk() && submarine.isSunk() && patrolboat.isSunk()) {
+            if (ships[0].isSunk() && ships[1].isSunk() && ships[2].isSunk() && ships[3].isSunk() && ships[4].isSunk()) {
               return 'game over';
             }
-        }
+            return coord
+            
+        },
+        
     }
 }
 
