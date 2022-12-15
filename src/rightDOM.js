@@ -1,5 +1,6 @@
-function cpuDOM() {
-    
+function enemyDOM(coord,color) {
+    let cell = document.getElementById(`right${coord[0]},${coord[1]}`)
+    cell.style.backgroundColor = color
 }
   
 
@@ -28,4 +29,4 @@ function cpuDOM(gameBoard, shipsArray, overallHitbox){
 }
 */
 
-module.exports = cpuDOM
+module.exports = enemyDOM
