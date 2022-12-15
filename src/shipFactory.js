@@ -1,11 +1,11 @@
-function shipFactory(length, name, hit, sunk){
+function shipFactory(length, name, hit){
     return{
         length,
         name,
         hit,
-        sunk,
         gotHit(){
             if(length > hit){
+                console.log('test')
                 this.hit += 1
                 return this.hit;
             }

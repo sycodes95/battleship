@@ -4,20 +4,20 @@ function gameBoard(){
     return {
         board: [],
         attacked: [],
-        overallHitbox: [],
         carrierHitbox: [],
         battleshipHitbox: [],
         destroyerHitbox: [],
         submarineHitbox: [],
         patrolboatHitbox: [],
 
-        createBoard(domBoard){
+        createBoard(domBoard, playerName){
             let coords = [];
             let xAxis = [0,1,2,3,4,5,6,7,8,9]
             xAxis.forEach(el => {
                 for(let i = 0; i < xAxis.length; i++) coords.push([el, xAxis[i]]);
             })
             this.board = coords
+            
             for (let e of this.board) {
                 let cell = document.createElement('div');
                 cell.classList.add('rightCells');
@@ -36,21 +36,30 @@ function gameBoard(){
                 const x = coord[0];
                 const y = coord[1] + i;
                 this[hitboxKey].push([x, y]);
-                this.overallHitbox.push([x, y])
+                
             }
             return this[hitboxKey];
         },
         receiveAttack(coord, ships) {
             this.attacked.push(coord);
-            for(let e of this.overallHitbox){
-                if(e[0] == coord[0] && e[1] == coord[1]){
-                    let color = 'red'
-                    playerDOM(coord, color)
-                    break;
-                } else {
-                    let color = 'white'
-                    playerDOM(coord, color)
+            const shipHitboxes = [this.carrierHitbox, this.battleshipHitbox, this.destroyerHitbox,
+            this.submarineHitbox, this.patrolboatHitbox]
+            for(let ship of shipHitboxes){
+                for(let hitboxes of ship){
+                    console.log(hitboxes);
+                    if(hitboxes[0] == coord[0] && hitboxes[1] == coord[1]){
+                        
+                        let color = 'red'
+                        playerDOM(coord, color)
+                        return shipHitboxes.indexOf(ship)
+                        break;
+                        
+                    } else {
+                        let color = 'white'
+                        playerDOM(coord, color)
+                    }
                 }
+                break;
             }
             if (ships[0].isSunk() && ships[1].isSunk() && ships[2].isSunk() && ships[3].isSunk() && ships[4].isSunk()) {
               return 'game over';
@@ -58,6 +67,14 @@ function gameBoard(){
             return coord
             
         },
+        cpuEventListener(){
+            let rightCells = document.querySelectorAll('.rightCells');
+            rightCells.forEach(e =>{
+                e.addEventListener('click', ()=>{
+                    console.log(e.id)
+                })
+            })
+        }
         
     }
 }
