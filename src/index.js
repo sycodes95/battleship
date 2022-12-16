@@ -39,42 +39,48 @@ class Player{
             const cpuCells = document.querySelectorAll('.rightCells');
             cpuCells.forEach(cell =>{
                 cell.addEventListener('click', ()=>{
-                    let cellCoord = this.convertIdToCoord(cell)
-                    for(let att of this.enemyBoard.attacked){
-                        console.log(att);
-                        if(cellCoord[0] == att[0] && cellCoord[1] == att[1]){
-                            console.log('exist');
-                        } else {
-                            console.log('nope');
-                        
-                        }
-                    }
-                    /*
-                    this.enemyBoard.attacked.some(cd => {
-                        if(cellCoord[0] == cd[0] && cellCoord[1] == cd[1]){
-                            return;
-                        } else {
-                            
-                        }
-                    })
-                    */
-                    
+                    let cd = this.convertIdToCoord(cell)
+                    let attackedCoord = this.enemyBoard.attacked
                     const overallHitboxes = this.enemyHitboxes.reduce((acc, arr) => acc.concat(arr), []);
-                    for(let hb of overallHitboxes){
-                        if(hb[0] == cellCoord[0] && hb[1] == cellCoord[1]){
-                            enemyDOM(cellCoord, 'red')
-                            this.findAttackedShip(cellCoord)
-                            break;
-                        } else {
-                            enemyDOM(cellCoord, 'white')
+                    if(attackedCoord.length < 1){
+                        for(let hb of overallHitboxes){
+                            if(hb[0] == cd[0] && hb[1] == cd[1]){
+                                enemyDOM(cd, 'red')
+                                this.findAttackedShip(cd)
+                                break;
+                            } else {
+                                enemyDOM(cd, 'white')
+                            }
                         }
+                        attackedCoord.push(cd)
+
+                    }
+                    if(attackedCoord.some(e => e[0] == cd[0] && e[1] == cd[1])){
+                        return;
+                    } else {
+                        
+                        for(let hb of overallHitboxes){
+                            if(hb[0] == cd[0] && hb[1] == cd[1]){
+                                enemyDOM(cd, 'red')
+                                this.findAttackedShip(cd)
+                                break;
+                            } else {
+                                enemyDOM(cd, 'white')
+                            }
+                        }
+                        attackedCoord.push(cd)
+                            
+                        
+    
+                        console.log(this.enemyBoard.attacked)
+                        
+                        setTimeout(()=>{
+                            this.board.receiveAttack(this.cpuAttackCoord())
+                        }, 200)
+
                     }
                     
-                    console.log(overallHitboxes);
-                    setTimeout(()=>{
-                        this.board.receiveAttack(this.cpuAttackCoord())
-                    }, 200)
-                    
+
                 })
             })
         }
@@ -100,8 +106,6 @@ class Player{
             for(let hb of ship){
                 if(hb[0] == coord[0] && hb[1] == coord[1]){
                     this.enemyShips[index].gotHit()
-                    console.log('meow')
-                    console.log(this.enemyBoard.attacked)
                 }
             }
         })
