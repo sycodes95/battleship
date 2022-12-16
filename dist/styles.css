@@ -15,20 +15,29 @@ header{
 }
 
 .content{
-    display: flex;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: 100px 1fr 100px;
     align-self: center;
+    column-gap: 100px;
+    row-gap: 40px;
 }
-
+.commentate{
+    grid-column: 1 / 3;
+    grid-row: 1 / 2 ;
+    border: solid 1px white;
+}
 .leftGrid{
-    margin-top: 100px;
+    
     color: whitesmoke;
     border: solid 1px white;
-
+    
     height: 500px;
     width: 500px;
-    margin-right: 100px;
+    
 
     display: grid;
+    
     grid-template-columns: repeat(10, 1fr);
     grid-template-rows: repeat(10, 1fr);
 
@@ -38,8 +47,16 @@ header{
 
 }
 
+.ships{
+    background-color: green;
+}
+
+.leftCommand{
+    border: solid 1px white;
+}
+
 .rightGrid{
-    margin-top: 100px;
+    
     color: whitesmoke;
     border: solid 1px white;
     
@@ -57,4 +74,8 @@ header{
     background-color: black;
     border: solid 1px white;
 
+}
+
+.rightCommand{
+    border: solid 1px white;
 }

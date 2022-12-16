@@ -1,5 +1,4 @@
 function enemyDOM(coord,color) {
-    
     let cell = document.getElementById(`right${coord[0]},${coord[1]}`)
     cell.style.backgroundColor = color
 }

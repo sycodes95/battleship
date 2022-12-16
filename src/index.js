@@ -17,6 +17,8 @@ class Player{
         this.patrolboat = this.createPatrolboat()
 
         this.ships = [this.carrier, this.battleship, this.destroyer, this.submarine, this.patrolboat]
+        this.playerHitboxes = [this.board.carrierHitbox, this.board.battleshipHitbox,
+        this.board.destroyerHitbox, this.board.submarineHitbox, this.board.patrolboatHitbox]
 
         this.enemy = 'enemy'
         this.enemyBoard = enemyBoard;
@@ -34,57 +36,55 @@ class Player{
             this.enemyBoard.destroyerHitbox, this.enemyBoard.submarineHitbox,
             this.enemyBoard.patrolboatHitbox]
     }
-    attack(){
-        if(this.name == 'player'){
+    attack() {
+        if (this.name == 'player') {
             const cpuCells = document.querySelectorAll('.rightCells');
-            cpuCells.forEach(cell =>{
-                cell.addEventListener('click', ()=>{
-                    let cd = this.convertIdToCoord(cell)
-                    let attackedCoord = this.enemyBoard.attacked
-                    const overallHitboxes = this.enemyHitboxes.reduce((acc, arr) => acc.concat(arr), []);
-                    if(attackedCoord.length < 1){
-                        for(let hb of overallHitboxes){
-                            if(hb[0] == cd[0] && hb[1] == cd[1]){
-                                enemyDOM(cd, 'red')
-                                this.findAttackedShip(cd)
-                                break;
-                            } else {
-                                enemyDOM(cd, 'white')
-                            }
-                        }
-                        attackedCoord.push(cd)
-
+            cpuCells.forEach(cell => {
+                cell.addEventListener('click', () => {
+                const leftCommand = document.querySelector('.leftCommand')
+                leftCommand.innerHTML = ''
+                let cd = this.convertEnemyIdToCoord(cell);
+                let attackCoord = this.enemyBoard.attacked;
+                const overallHitboxes = this.enemyHitboxes.reduce((acc, arr) => acc.concat(arr), []);
+        
+                if (attackCoord.some(e => e[0] == cd[0] && e[1] == cd[1])) {
+                    return; // Return early if the cell has already been attacked
+                }
+        
+                let isHitbox = false;
+                for (let hb of overallHitboxes) {
+                    if (hb[0] == cd[0] && hb[1] == cd[1]) {
+                    isHitbox = true;
+                    break;
                     }
-                    if(attackedCoord.some(e => e[0] == cd[0] && e[1] == cd[1])){
-                        return;
-                    } else {
+                }
+                
+                if (isHitbox) {
+                    enemyDOM(cd, 'red');
+                    this.findEnemyAttackedShip(cd);
+                    attackCoord.push(cd);
+                } else {
+                    enemyDOM(cd, 'white');
+                    attackCoord.push(cd);
+                }
+                console.log(this.carrier.hit)
+                console.log(this.battleship.hit)
+                console.log(this.destroyer.hit)
+                console.log(this.submarine.hit)
+                console.log(this.patrolboat.hit)
+                if(!this.checkGameOver()){
+                    setTimeout(() => {
                         
-                        for(let hb of overallHitboxes){
-                            if(hb[0] == cd[0] && hb[1] == cd[1]){
-                                enemyDOM(cd, 'red')
-                                this.findAttackedShip(cd)
-                                break;
-                            } else {
-                                enemyDOM(cd, 'white')
-                            }
-                        }
-                        attackedCoord.push(cd)
-                            
-                        
-    
-                        console.log(this.enemyBoard.attacked)
-                        
-                        setTimeout(()=>{
-                            this.board.receiveAttack(this.cpuAttackCoord())
-                        }, 200)
-
-                    }
-                    
-
-                })
-            })
+                        let rcvCd = this.board.receiveAttack(this.cpuAttackCoord());
+                        this.findPlayerAttackedShip(rcvCd)
+                        console.log(rcvCd);
+                    }, 200);
+                }
+                });
+            });
         }
-    }
+      }
+      
     cpuAttackCoord(){
         let gen = this.generateCoord();
         while (this.board.attacked.some(e => e[0] == gen[0] && e[1] == gen[1])) {
@@ -98,10 +98,14 @@ class Player{
     generateShipCoord(ship){
         return [Math.floor(Math.random() * 10), Math.floor(Math.random() * (10 - ship.length))]
     }
-    convertIdToCoord(el){
+    convertEnemyIdToCoord(el){
         return [parseInt(el.id.charAt(5)), parseInt(el.id.charAt(7))]
     }
-    findAttackedShip(coord){
+    convertPlayerIdToCoord(el){
+        return [parseInt(el.id.charAt(4)), parseInt(el.id.charAt(6))]
+    }
+    
+    findEnemyAttackedShip(coord){
         this.enemyHitboxes.some((ship, index) =>{
             for(let hb of ship){
                 if(hb[0] == coord[0] && hb[1] == coord[1]){
@@ -110,9 +114,274 @@ class Player{
             }
         })
     }
-    checkAttackedCoord(coord){
-        
+    findPlayerAttackedShip(coord){
+        this.playerHitboxes.some((ship, index) =>{
+            for(let hb of ship){
+                if(hb[0] == coord[0] && hb[1] == coord[1]){
+                    this.ships[index].gotHit()
+                }
+            }
+        })
     }
+
+      
+    
+    placePlayerShips(){
+        const leftCommand = document.querySelector('.leftCommand')
+        
+        let placeCarrier = document.createElement('div')
+        placeCarrier.textContent = 'Place your carrier!';
+        placeCarrier.style.color = 'white'
+        leftCommand.appendChild(placeCarrier)
+        
+        const playerCells = document.querySelectorAll('.leftCells');
+        
+        playerCells.forEach(cell =>{
+            cell.addEventListener('mouseenter', ()=>{
+                let cd = this.convertPlayerIdToCoord(cell);
+                
+                if(this.board.carrierHitbox.length < 1){
+                    for(let i = 0; i < this.carrier.length; i++){
+                        let coord = document.getElementById(`left${cd[0]},${cd[1]+i}`)
+                        coord.classList.add('ships')
+                    }
+                } else if (this.board.battleshipHitbox.length < 1){
+                    for(let i = 0; i < this.battleship.length; i++){
+                        let coord = document.getElementById(`left${cd[0]},${cd[1]+i}`)
+                        coord.classList.add('ships')
+                    }
+                } else if (this.board.destroyerHitbox.length < 1){
+                    for(let i = 0; i < this.destroyerHitbox.length; i++){
+                        playerDOM([cd[0], cd[1]+i], 'green')
+                    }
+                } else if (this.board.submarineHitbox.length < 1){
+                    for(let i = 0; i < this.submarineHitbox.length; i++){
+                        playerDOM([cd[0], cd[1]+i], 'green')
+                    }
+                } else if (this.board.patrolboatHitbox.length < 1){
+                    for(let i = 0; i < this.patrolboatHitbox.length; i++){
+                        playerDOM([cd[0], cd[1]+i], 'green')
+                    }
+                }
+            
+            })
+            cell.addEventListener('mouseout', ()=>{
+                let cd = this.convertPlayerIdToCoord(cell);
+                
+                if(this.board.carrierHitbox.length < 1){
+                    for(let i = 0; i < this.carrier.length; i++){
+                        let coord = document.getElementById(`left${cd[0]},${cd[1]+i}`)
+                        coord.classList.remove('ships')
+                    }
+                } else if (this.board.battleshipHitbox.length < 1){
+                    for(let i = 0; i < this.battleship.length; i++){
+                        let coord = document.getElementById(`left${cd[0]},${cd[1]+i}`)
+                        coord.classList.remove('ships')
+                    }
+                } else if (this.board.destroyerHitbox.length < 1){
+                    for(let i = 0; i < this.destroyerHitbox.length; i++){
+                        playerDOM([cd[0], cd[1]+i], 'black')
+                    }
+                } else if (this.board.submarineHitbox.length < 1){
+                    for(let i = 0; i < this.submarineHitbox.length; i++){
+                        playerDOM([cd[0], cd[1]+i], 'black')
+                    }
+                } else if (this.board.patrolboatHitbox.length < 1){
+                    for(let i = 0; i < this.patrolboatHitbox.length; i++){
+                        playerDOM([cd[0], cd[1]+i], 'black')
+                    }
+                }
+
+            })
+            
+            cell.addEventListener('click', ()=>{
+                console.log('click');
+                let cd = this.convertPlayerIdToCoord(cell);
+                if(this.board.carrierHitbox.length < 1){
+                    
+                    if(!this.board.placeShip(this.carrier, cd, 'player')){
+                        return
+                    }
+                    
+                    this.board.placeShip(this.carrier, cd, 'player');
+                    leftCommand.innerHTML = ''
+                    let placeBattleship = document.createElement('div')
+                    placeBattleship.textContent = 'Place your battleship!';
+                    placeBattleship.style.color = 'white'
+                    leftCommand.appendChild(placeBattleship)
+                    
+                } else if (this.board.battleshipHitbox.length < 1){
+                    if(!this.board.placeShip(this.battleship, cd, 'player')){
+                        return
+                    }
+                    this.board.placeShip(this.battleship, cd, 'player');
+                    leftCommand.innerHTML = ''
+                    let placeDestroyer = document.createElement('div')
+                    placeDestroyer.textContent = 'Place your destroyer!';
+                    placeDestroyer.style.color = 'white'
+                    leftCommand.appendChild(placeDestroyer)
+                } else if (this.board.destroyerHitbox.length < 1){
+                    if(!this.board.placeShip(this.destroyer, cd, 'player')){
+                        return
+                    }
+                    this.board.placeShip(this.destroyer, cd, 'player')
+                    leftCommand.innerHTML = ''
+                    let placeSubmarine = document.createElement('div')
+                    placeSubmarine.textContent = 'Place your submarine!';
+                    placeSubmarine.style.color = 'white'
+                    leftCommand.appendChild(placeSubmarine)
+                } else if (this.board.submarineHitbox.length < 1){
+                    if(!this.board.placeShip(this.submarine, cd, 'player')){
+                        return
+                    }
+                    this.board.placeShip(this.submarine, cd, 'player')
+                    leftCommand.innerHTML = ''
+                    let placePatrolboat = document.createElement('div')
+                    placePatrolboat.textContent = 'Place your patrolboat!';
+                    placePatrolboat.style.color = 'white'
+                    leftCommand.appendChild(placePatrolboat)
+
+                } else if (this.board.patrolboatHitbox.length < 1){
+                    if(!this.board.placeShip(this.patrolboat, cd, 'player')){
+                        return
+                    }
+                    this.board.placeShip(this.patrolboat, cd, 'player')
+                    leftCommand.innerHTML = ''
+                    let beginAssault = document.createElement('div')
+                    beginAssault.textContent = 'Begin assault!';
+                    beginAssault.style.color = 'red'
+                    leftCommand.appendChild(beginAssault)
+                    this.attack()
+                    
+
+                }
+            })
+
+            
+            
+
+            
+            /*
+            cell.addEventListener('mouseenter', ()=>{
+                let cd = this.convertPlayerIdToCoord(cell);
+                
+                if(this.board.carrierHitbox.length < 1){
+                    for(let i = 0; i < this.carrier.length; i++){
+                        playerDOM([cd[0], cd[1]+i], 'green')
+                    }
+                } else if (this.board.battleshipHitbox.length < 1){
+                    for(let i = 0; i < this.battleship.length; i++){
+                        playerDOM([cd[0], cd[1]+i], 'green')
+                    }
+                } else if (this.board.destroyerHitbox.length < 1){
+                    for(let i = 0; i < this.destroyerHitbox.length; i++){
+                        playerDOM([cd[0], cd[1]+i], 'green')
+                    }
+                } else if (this.board.submarineHitbox.length < 1){
+                    for(let i = 0; i < this.submarineHitbox.length; i++){
+                        playerDOM([cd[0], cd[1]+i], 'green')
+                    }
+                } else if (this.board.patrolboatHitbox.length < 1){
+                    for(let i = 0; i < this.patrolboatHitbox.length; i++){
+                        playerDOM([cd[0], cd[1]+i], 'green')
+                    }
+                }
+            
+            })
+            cell.addEventListener('mouseout', ()=>{
+                let cd = this.convertPlayerIdToCoord(cell);
+                
+                if(this.board.carrierHitbox.length < 1){
+                    for(let i = 0; i < this.carrier.length; i++){
+                        playerDOM([cd[0], cd[1]+i], 'black')
+                    }
+                } else if (this.board.battleshipHitbox.length < 1){
+                    for(let i = 0; i < this.battleship.length; i++){
+                        playerDOM([cd[0], cd[1]+i], 'black')
+                    }
+                } else if (this.board.destroyerHitbox.length < 1){
+                    for(let i = 0; i < this.destroyerHitbox.length; i++){
+                        playerDOM([cd[0], cd[1]+i], 'black')
+                    }
+                } else if (this.board.submarineHitbox.length < 1){
+                    for(let i = 0; i < this.submarineHitbox.length; i++){
+                        playerDOM([cd[0], cd[1]+i], 'black')
+                    }
+                } else if (this.board.patrolboatHitbox.length < 1){
+                    for(let i = 0; i < this.patrolboatHitbox.length; i++){
+                        playerDOM([cd[0], cd[1]+i], 'black')
+                    }
+                }
+
+            })
+            cell.addEventListener('click', ()=>{
+                console.log('click');
+                let cd = this.convertPlayerIdToCoord(cell);
+                if(this.board.carrierHitbox.length < 1){
+                    
+                    if(!this.board.placeShip(this.carrier, cd, 'player')){
+                        return
+                    }
+                    
+                    this.board.placeShip(this.carrier, cd, 'player');
+                    leftCommand.innerHTML = ''
+                    let placeBattleship = document.createElement('div')
+                    placeBattleship.textContent = 'Place your battleship!';
+                    placeBattleship.style.color = 'white'
+                    leftCommand.appendChild(placeBattleship)
+                    
+                } else if (this.board.battleshipHitbox.length < 1){
+                    if(!this.board.placeShip(this.battleship, cd, 'player')){
+                        return
+                    }
+                    this.board.placeShip(this.battleship, cd, 'player');
+                    leftCommand.innerHTML = ''
+                    let placeDestroyer = document.createElement('div')
+                    placeDestroyer.textContent = 'Place your destroyer!';
+                    placeDestroyer.style.color = 'white'
+                    leftCommand.appendChild(placeDestroyer)
+                } else if (this.board.destroyerHitbox.length < 1){
+                    if(!this.board.placeShip(this.destroyer, cd, 'player')){
+                        return
+                    }
+                    this.board.placeShip(this.destroyer, cd, 'player')
+                    leftCommand.innerHTML = ''
+                    let placeSubmarine = document.createElement('div')
+                    placeSubmarine.textContent = 'Place your submarine!';
+                    placeSubmarine.style.color = 'white'
+                    leftCommand.appendChild(placeSubmarine)
+                } else if (this.board.submarineHitbox.length < 1){
+                    if(!this.board.placeShip(this.submarine, cd, 'player')){
+                        return
+                    }
+                    this.board.placeShip(this.submarine, cd, 'player')
+                    leftCommand.innerHTML = ''
+                    let placePatrolboat = document.createElement('div')
+                    placePatrolboat.textContent = 'Place your patrolboat!';
+                    placePatrolboat.style.color = 'white'
+                    leftCommand.appendChild(placePatrolboat)
+
+                } else if (this.board.patrolboatHitbox.length < 1){
+                    if(!this.board.placeShip(this.patrolboat, cd, 'player')){
+                        return
+                    }
+                    this.board.placeShip(this.patrolboat, cd, 'player')
+                    leftCommand.innerHTML = ''
+                    let beginAssault = document.createElement('div')
+                    beginAssault.textContent = 'Begin assault!';
+                    beginAssault.style.color = 'red'
+                    leftCommand.appendChild(beginAssault)
+                    this.attack()
+                    
+
+                }
+            })
+            */
+            
+            
+        })
+    }
+    
     
     placeCpuShips(){
         let enemyShips = [this.enemyCarrier, this.enemyBattleship, this.enemyDestroyer,
@@ -136,9 +405,34 @@ class Player{
         }
         
     }
+    
     checkGameOver(){
+        const leftCells = document.querySelectorAll('.leftCells')
+        const rightCells = document.querySelectorAll('.rightCells')
         if(this.board.allShipsSunk(this.ships)){
+            leftCells.forEach(e =>{
+                e.remove()
+            })
+            rightCells.forEach(e =>{
+                e.remove()
+            })
             alert('You lost u fkn noob')
+            
+            gameLoop()
+            return true
+        } else if(this.enemyBoard.allShipsSunk(this.enemyShips)){
+            leftCells.forEach(e =>{
+                e.remove()
+            })
+            rightCells.forEach(e =>{
+                e.remove()
+            })
+            alert('you won, what a G')
+            
+            gameLoop()
+            return true
+        } else {
+            return false
         }
     }
     createPlayerBoard(){
@@ -176,10 +470,16 @@ function gameLoop(){
     let player = new Player(playerBoard, enemyBoard)
     player.createPlayerBoard()
     player.createEnemyBoard()
-    
+    player.placePlayerShips();
     player.placeCpuShips()
+    /*
     player.board.placeShip(player.carrier, [5,4], 'player')
-    player.attack()
+    player.board.placeShip(player.battleship, [4,4], 'player')
+    player.board.placeShip(player.destroyer, [3,4], 'player')
+    player.board.placeShip(player.submarine, [2,4], 'player')
+    player.board.placeShip(player.patrolboat, [1,4], 'player')
+    */
+    
     
     
 }
