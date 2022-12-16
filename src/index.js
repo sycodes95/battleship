@@ -3,7 +3,7 @@ const gameBoard = require('./gameBoard')
 //const player = require('./player')
 //const cpu = require('./player')
 const playerDOM = require('./leftDOM')
-const cpuDOM = require('./rightDOM.js');
+const enemyDOM = require('./rightDOM');
 
 class Player{
     constructor(board,enemyBoard){
@@ -26,13 +26,51 @@ class Player{
         this.enemyDestroyer = this.createDestroyer()
         this.enemySubmarine = this.createSubmarine()
         this.enemyPatrolboat = this.createPatrolboat()
+
+        this.enemyShips = [this.enemyCarrier, this.enemyBattleship, this.enemyDestroyer,
+        this.enemySubmarine, this.enemyPatrolboat]
         
+        this.enemyHitboxes = [this.enemyBoard.carrierHitbox, this.enemyBoard.battleshipHitbox,
+            this.enemyBoard.destroyerHitbox, this.enemyBoard.submarineHitbox,
+            this.enemyBoard.patrolboatHitbox]
     }
     attack(){
         if(this.name == 'player'){
             const cpuCells = document.querySelectorAll('.rightCells');
             cpuCells.forEach(cell =>{
                 cell.addEventListener('click', ()=>{
+                    let cellCoord = this.convertIdToCoord(cell)
+                    for(let att of this.enemyBoard.attacked){
+                        console.log(att);
+                        if(cellCoord[0] == att[0] && cellCoord[1] == att[1]){
+                            console.log('exist');
+                        } else {
+                            console.log('nope');
+                        
+                        }
+                    }
+                    /*
+                    this.enemyBoard.attacked.some(cd => {
+                        if(cellCoord[0] == cd[0] && cellCoord[1] == cd[1]){
+                            return;
+                        } else {
+                            
+                        }
+                    })
+                    */
+                    
+                    const overallHitboxes = this.enemyHitboxes.reduce((acc, arr) => acc.concat(arr), []);
+                    for(let hb of overallHitboxes){
+                        if(hb[0] == cellCoord[0] && hb[1] == cellCoord[1]){
+                            enemyDOM(cellCoord, 'red')
+                            this.findAttackedShip(cellCoord)
+                            break;
+                        } else {
+                            enemyDOM(cellCoord, 'white')
+                        }
+                    }
+                    
+                    console.log(overallHitboxes);
                     setTimeout(()=>{
                         this.board.receiveAttack(this.cpuAttackCoord())
                     }, 200)
@@ -54,6 +92,24 @@ class Player{
     generateShipCoord(ship){
         return [Math.floor(Math.random() * 10), Math.floor(Math.random() * (10 - ship.length))]
     }
+    convertIdToCoord(el){
+        return [parseInt(el.id.charAt(5)), parseInt(el.id.charAt(7))]
+    }
+    findAttackedShip(coord){
+        this.enemyHitboxes.some((ship, index) =>{
+            for(let hb of ship){
+                if(hb[0] == coord[0] && hb[1] == coord[1]){
+                    this.enemyShips[index].gotHit()
+                    console.log('meow')
+                    console.log(this.enemyBoard.attacked)
+                }
+            }
+        })
+    }
+    checkAttackedCoord(coord){
+        
+    }
+    
     placeCpuShips(){
         let enemyShips = [this.enemyCarrier, this.enemyBattleship, this.enemyDestroyer,
         this.enemySubmarine, this.enemyPatrolboat]
@@ -66,13 +122,13 @@ class Player{
             let occupiedTotal = [].concat(...occupied)
             let gen = this.generateShipCoord(ship)
             
-            while(occupiedTotal.some(occ => occ[1] == (gen[1] + ship.length) ||
+            while(occupiedTotal.some(occ => occ[0] == gen[0] && occ[1] == (gen[1] + ship.length) ||
             occ[0] == gen[0] && occ[1] == gen[1])){
                 gen = this.generateShipCoord(ship)
             }
             
             this.enemyBoard.placeShip(ship, gen, 'enemy')
-            console.log(occupied)
+            
         }
         
     }

@@ -36,8 +36,6 @@ function gameBoard(){
         placeShip(ship, coord, name) {
             
             if (coord[1] + ship.length > 10) {
-
-                console.log('doh')
                 return false;
             }
             const hitboxKey = `${ship.name}Hitbox`;
@@ -56,15 +54,12 @@ function gameBoard(){
             return this[hitboxKey];
         },
         receiveAttack(coord) {
-            
             this.attacked.push(coord);
-            console.log(this.attacked)
             const shipHitboxes = [this.carrierHitbox, this.battleshipHitbox, this.destroyerHitbox,
             this.submarineHitbox, this.patrolboatHitbox]
             
             for(let ship of shipHitboxes){
                 for(let hitboxes of ship){
-                    console.log(hitboxes);
                     if(hitboxes[0] == coord[0] && hitboxes[1] == coord[1]){
                         let color = 'red'
                         playerDOM(coord, color)
